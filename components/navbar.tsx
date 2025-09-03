@@ -64,12 +64,16 @@ export function Navbar() {
                 Products
               </Button>
             </Link>
+            <Link href="/about">
             <Button variant="ghost" className="text-foreground hover:text-white">
               About
             </Button>
-            <Button variant="ghost" className="text-foreground hover:text-whitey">
+            </Link>
+            <Link href="/contact">
+            <Button variant="ghost" className="text-foreground hover:text-white">
               Contact
             </Button>
+            </Link>
           </div>
 
           {/* Cart, Account and Mobile Menu */}
@@ -117,8 +121,12 @@ export function Navbar() {
                   <DropdownMenuItem>
                     <Link href="/account">My Account</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>About</DropdownMenuItem>
-                  <DropdownMenuItem>Contact</DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link href={"/about"}>About</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link href={"/contact"}>Contact</Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

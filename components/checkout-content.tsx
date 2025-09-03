@@ -1,54 +1,65 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Separator } from "@/components/ui/separator"
-import { MessageCircle, QrCode, Lock, Truck, Shield, CheckCircle, User, UserPlus } from "lucide-react"
-import { useCart } from "@/contexts/cart-context"
-import { useUser } from "@/contexts/user-context"
-import Link from "next/link"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
+import {
+  MessageCircle,
+  QrCode,
+  Lock,
+  Truck,
+  Shield,
+  CheckCircle,
+  User,
+  UserPlus,
+} from "lucide-react";
+import { useCart } from "@/contexts/cart-context";
+import { useUser } from "@/contexts/user-context";
+import Link from "next/link";
 
 interface BillingDetails {
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  address: string
-  city: string
-  state: string
-  pincode: string
-  country: string
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  country: string;
 }
 
 interface AuthForm {
-  email: string
-  password: string
-  confirmPassword: string
-  isLogin: boolean
+  email: string;
+  password: string;
+  confirmPassword: string;
+  isLogin: boolean;
 }
 
 export function CheckoutContent() {
-  const { items, total, itemCount, clearCart } = useCart()
-  const { user, isLoggedIn, login, register, createUser, addOrder } = useUser()
-  const router = useRouter()
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [paymentMethod, setPaymentMethod] = useState("whatsapp")
-  const [showQRCode, setShowQRCode] = useState(false)
-  const [qrPaymentStatus, setQrPaymentStatus] = useState<"pending" | "paid">("pending")
+  const { items, total, itemCount, clearCart } = useCart();
+  const { user, isLoggedIn, login, register, createUser, addOrder } = useUser();
+  const router = useRouter();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("whatsapp");
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [qrPaymentStatus, setQrPaymentStatus] = useState<"pending" | "paid">(
+    "pending"
+  );
 
   const [authForm, setAuthForm] = useState<AuthForm>({
     email: "",
     password: "",
     confirmPassword: "",
     isLogin: true,
-  })
+  });
 
   const [billingDetails, setBillingDetails] = useState<BillingDetails>({
     firstName: user?.firstName || "",
@@ -60,67 +71,81 @@ export function CheckoutContent() {
     state: user?.state || "",
     pincode: user?.pincode || "",
     country: user?.country || "India",
-  })
+  });
 
-  const [errors, setErrors] = useState<Partial<BillingDetails & AuthForm>>({})
+  const [errors, setErrors] = useState<Partial<BillingDetails & AuthForm>>({});
 
   const validateAuthForm = (): boolean => {
-    const newErrors: Partial<AuthForm> = {}
+    const newErrors: Partial<AuthForm> = {};
 
-    if (!authForm.email.trim()) newErrors.email = "Email is required"
-    else if (!/\S+@\S+\.\S+/.test(authForm.email)) newErrors.email = "Email is invalid"
+    if (!authForm.email.trim()) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(authForm.email))
+      newErrors.email = "Email is invalid";
 
-    if (!authForm.password.trim()) newErrors.password = "Password is required"
-    else if (authForm.password.length < 6) newErrors.password = "Password must be at least 6 characters"
+    if (!authForm.password.trim()) newErrors.password = "Password is required";
+    else if (authForm.password.length < 6)
+      newErrors.password = "Password must be at least 6 characters";
 
     if (!authForm.isLogin) {
-      if (!authForm.confirmPassword.trim()) newErrors.confirmPassword = "Confirm password is required"
-      else if (authForm.password !== authForm.confirmPassword) newErrors.confirmPassword = "Passwords do not match"
+      if (!authForm.confirmPassword.trim())
+        newErrors.confirmPassword = "Confirm password is required";
+      else if (authForm.password !== authForm.confirmPassword)
+        newErrors.confirmPassword = "Passwords do not match";
     }
 
-    setErrors((prev) => ({ ...prev, ...newErrors }))
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors((prev) => ({ ...prev, ...newErrors }));
+    return Object.keys(newErrors).length === 0;
+  };
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<BillingDetails> = {}
+    const newErrors: Partial<BillingDetails> = {};
 
-    if (!billingDetails.firstName.trim()) newErrors.firstName = "First name is required"
-    if (!billingDetails.lastName.trim()) newErrors.lastName = "Last name is required"
-    if (!billingDetails.email.trim()) newErrors.email = "Email is required"
-    else if (!/\S+@\S+\.\S+/.test(billingDetails.email)) newErrors.email = "Email is invalid"
-    if (!billingDetails.phone.trim()) newErrors.phone = "Phone number is required"
+    if (!billingDetails.firstName.trim())
+      newErrors.firstName = "First name is required";
+    if (!billingDetails.lastName.trim())
+      newErrors.lastName = "Last name is required";
+    if (!billingDetails.email.trim()) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(billingDetails.email))
+      newErrors.email = "Email is invalid";
+    if (!billingDetails.phone.trim())
+      newErrors.phone = "Phone number is required";
     else if (!/^\d{10}$/.test(billingDetails.phone.replace(/\D/g, "")))
-      newErrors.phone = "Phone number must be 10 digits"
-    if (!billingDetails.address.trim()) newErrors.address = "Address is required"
-    if (!billingDetails.city.trim()) newErrors.city = "City is required"
-    if (!billingDetails.state.trim()) newErrors.state = "State is required"
-    if (!billingDetails.pincode.trim()) newErrors.pincode = "Pincode is required"
-    else if (!/^\d{6}$/.test(billingDetails.pincode)) newErrors.pincode = "Pincode must be 6 digits"
+      newErrors.phone = "Phone number must be 10 digits";
+    if (!billingDetails.address.trim())
+      newErrors.address = "Address is required";
+    if (!billingDetails.city.trim()) newErrors.city = "City is required";
+    if (!billingDetails.state.trim()) newErrors.state = "State is required";
+    if (!billingDetails.pincode.trim())
+      newErrors.pincode = "Pincode is required";
+    else if (!/^\d{6}$/.test(billingDetails.pincode))
+      newErrors.pincode = "Pincode must be 6 digits";
 
-    setErrors((prev) => ({ ...prev, ...newErrors }))
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors((prev) => ({ ...prev, ...newErrors }));
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!validateAuthForm()) return
+    if (!validateAuthForm()) return;
 
-    setIsProcessing(true)
+    setIsProcessing(true);
 
     try {
       if (authForm.isLogin) {
-        const success = await login(authForm.email, authForm.password)
+        const success = await login(authForm.email, authForm.password);
         if (!success) {
-          setErrors((prev) => ({ ...prev, password: "Invalid email or password" }))
-          setIsProcessing(false)
-          return
+          setErrors((prev) => ({
+            ...prev,
+            password: "Invalid email or password",
+          }));
+          setIsProcessing(false);
+          return;
         }
       } else {
         if (!validateForm()) {
-          setIsProcessing(false)
-          return
+          setIsProcessing(false);
+          return;
         }
 
         const success = await register({
@@ -128,44 +153,55 @@ export function CheckoutContent() {
           email: authForm.email,
           password: authForm.password,
           orders: [],
-        })
+        });
 
         if (!success) {
-          setErrors((prev) => ({ ...prev, email: "User with this email already exists" }))
-          setIsProcessing(false)
-          return
+          setErrors((prev) => ({
+            ...prev,
+            email: "User with this email already exists",
+          }));
+          setIsProcessing(false);
+          return;
         }
       }
     } catch (error) {
-      setErrors((prev) => ({ ...prev, password: "Authentication failed" }))
+      setErrors((prev) => ({ ...prev, password: "Authentication failed" }));
     }
 
-    setIsProcessing(false)
-  }
+    setIsProcessing(false);
+  };
 
   const handleInputChange = (field: keyof BillingDetails, value: string) => {
-    setBillingDetails((prev) => ({ ...prev, [field]: value }))
+    setBillingDetails((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }))
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
-  }
+  };
 
-  const handleAuthInputChange = (field: keyof AuthForm, value: string | boolean) => {
-    setAuthForm((prev) => ({ ...prev, [field]: value }))
+  const handleAuthInputChange = (
+    field: keyof AuthForm,
+    value: string | boolean
+  ) => {
+    setAuthForm((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }))
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
-  }
+  };
 
-  const subtotal = total
-  const shipping = subtotal > 500 ? 0 : 50
-  const tax = Math.round(subtotal * 0.13)
-  const finalTotal = subtotal + shipping + tax
+  const subtotal = total;
+  const shipping = subtotal > 500 ? 0 : 50;
+  const tax = Math.round(subtotal * 0.13);
+  const finalTotal = subtotal + shipping + tax;
 
   const generateWhatsAppMessage = () => {
     const orderDetails = items
-      .map((item) => `• ${item.name} (Qty: ${item.quantity}) - Rs. ${item.price * item.quantity}`)
-      .join("\n")
+      .map(
+        (item) =>
+          `• ${item.name} (Qty: ${item.quantity}) - Rs. ${
+            item.price * item.quantity
+          }`
+      )
+      .join("\n");
 
     const message = `🙏 *New Order from PujaSamagri*
 
@@ -187,19 +223,19 @@ Shipping: ${shipping === 0 ? "Free" : `Rs. ${shipping}`}
 Tax (18%): Rs. ${tax}
 *Total: Rs. ${finalTotal}*
 
-Please confirm this order and provide payment details. Thank you! 🙏`
+Please confirm this order and provide payment details. Thank you! 🙏`;
 
-    return encodeURIComponent(message)
-  }
+    return encodeURIComponent(message);
+  };
 
   const handleWhatsAppPayment = () => {
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
-    const whatsappNumber = "9779851353789"
-    const message = generateWhatsAppMessage()
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`
+    const whatsappNumber = "9779851353789";
+    const message = generateWhatsAppMessage();
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
-    const orderId = Math.random().toString(36).substr(2, 9).toUpperCase()
+    const orderId = Math.random().toString(36).substr(2, 9).toUpperCase();
     const newOrder = {
       id: orderId,
       items,
@@ -208,33 +244,33 @@ Please confirm this order and provide payment details. Thank you! 🙏`
       paymentMethod: "WhatsApp",
       date: new Date().toISOString(),
       paymentStatus: "pending" as const,
-    }
+    };
 
     if (isLoggedIn && user) {
-      addOrder(newOrder)
+      addOrder(newOrder);
     } else {
       createUser({
         ...billingDetails,
         orders: [newOrder],
-      })
+      });
     }
 
-    window.open(whatsappUrl, "_blank")
-    clearCart()
-    router.push("/account")
-  }
+    window.open(whatsappUrl, "_blank");
+    clearCart();
+    router.push("/account");
+  };
 
   const handleQRPayment = async () => {
-    if (!validateForm()) return
+    if (!validateForm()) return;
 
-    setShowQRCode(true)
-    setIsProcessing(true)
+    setShowQRCode(true);
+    setIsProcessing(true);
 
     setTimeout(() => {
-      setQrPaymentStatus("paid")
-      setIsProcessing(false)
+      setQrPaymentStatus("paid");
+      setIsProcessing(false);
 
-      const orderId = Math.random().toString(36).substr(2, 9).toUpperCase()
+      const orderId = Math.random().toString(36).substr(2, 9).toUpperCase();
       const newOrder = {
         id: orderId,
         items,
@@ -243,46 +279,52 @@ Please confirm this order and provide payment details. Thank you! 🙏`
         paymentMethod: "QR Code",
         date: new Date().toISOString(),
         paymentStatus: "paid" as const,
-      }
+      };
 
       if (isLoggedIn && user) {
-        addOrder(newOrder)
+        addOrder(newOrder);
       } else {
         createUser({
           ...billingDetails,
           orders: [newOrder],
-        })
+        });
       }
 
-      clearCart()
+      clearCart();
       setTimeout(() => {
-        router.push("/account")
-      }, 2000)
-    }, 3000)
-  }
+        router.push("/account");
+      }, 2000);
+    }, 3000);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (paymentMethod === "whatsapp") {
-      handleWhatsAppPayment()
+      handleWhatsAppPayment();
     } else if (paymentMethod === "qrcode") {
-      handleQRPayment()
+      handleQRPayment();
     }
-  }
+  };
 
   if (items.length === 0) {
     return (
       <div className="text-center py-16">
         <div className="max-w-md mx-auto space-y-6">
-          <h2 className="text-2xl font-bold text-foreground">Your cart is empty</h2>
-          <p className="text-muted-foreground">Add some items to your cart before proceeding to checkout.</p>
+          <h2 className="text-2xl font-bold text-foreground">
+            Your cart is empty
+          </h2>
+          <p className="text-muted-foreground">
+            Add some items to your cart before proceeding to checkout.
+          </p>
           <Link href="/products">
-            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">Continue Shopping</Button>
+            <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              Continue Shopping
+            </Button>
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -298,8 +340,16 @@ Please confirm this order and provide payment details. Thank you! 🙏`
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  {authForm.isLogin ? <User className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
-                  <span>{authForm.isLogin ? "Login to Your Account" : "Create Account"}</span>
+                  {authForm.isLogin ? (
+                    <User className="h-5 w-5" />
+                  ) : (
+                    <UserPlus className="h-5 w-5" />
+                  )}
+                  <span>
+                    {authForm.isLogin
+                      ? "Login to Your Account"
+                      : "Create Account"}
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -331,10 +381,14 @@ Please confirm this order and provide payment details. Thank you! 🙏`
                       id="auth-email"
                       type="email"
                       value={authForm.email}
-                      onChange={(e) => handleAuthInputChange("email", e.target.value)}
+                      onChange={(e) =>
+                        handleAuthInputChange("email", e.target.value)
+                      }
                       className={errors.email ? "border-destructive" : ""}
                     />
-                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                    {errors.email && (
+                      <p className="text-sm text-destructive">{errors.email}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -343,28 +397,55 @@ Please confirm this order and provide payment details. Thank you! 🙏`
                       id="auth-password"
                       type="password"
                       value={authForm.password}
-                      onChange={(e) => handleAuthInputChange("password", e.target.value)}
+                      onChange={(e) =>
+                        handleAuthInputChange("password", e.target.value)
+                      }
                       className={errors.password ? "border-destructive" : ""}
                     />
-                    {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                    {errors.password && (
+                      <p className="text-sm text-destructive">
+                        {errors.password}
+                      </p>
+                    )}
                   </div>
 
                   {!authForm.isLogin && (
                     <div className="space-y-2">
-                      <Label htmlFor="auth-confirm-password">Confirm Password *</Label>
+                      <Label htmlFor="auth-confirm-password">
+                        Confirm Password *
+                      </Label>
                       <Input
                         id="auth-confirm-password"
                         type="password"
                         value={authForm.confirmPassword}
-                        onChange={(e) => handleAuthInputChange("confirmPassword", e.target.value)}
-                        className={errors.confirmPassword ? "border-destructive" : ""}
+                        onChange={(e) =>
+                          handleAuthInputChange(
+                            "confirmPassword",
+                            e.target.value
+                          )
+                        }
+                        className={
+                          errors.confirmPassword ? "border-destructive" : ""
+                        }
                       />
-                      {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
+                      {errors.confirmPassword && (
+                        <p className="text-sm text-destructive">
+                          {errors.confirmPassword}
+                        </p>
+                      )}
                     </div>
                   )}
 
-                  <Button type="submit" className="w-full" disabled={isProcessing}>
-                    {isProcessing ? "Processing..." : authForm.isLogin ? "Login" : "Create Account & Continue"}
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isProcessing}
+                  >
+                    {isProcessing
+                      ? "Processing..."
+                      : authForm.isLogin
+                      ? "Login"
+                      : "Create Account & Continue"}
                   </Button>
                 </form>
               </CardContent>
@@ -376,7 +457,11 @@ Please confirm this order and provide payment details. Thank you! 🙏`
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <Shield className="h-5 w-5" />
-                  <span>{isLoggedIn ? "Delivery Information" : "Customer Information"}</span>
+                  <span>
+                    {isLoggedIn
+                      ? "Delivery Information"
+                      : "Customer Information"}
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -386,20 +471,32 @@ Please confirm this order and provide payment details. Thank you! 🙏`
                     <Input
                       id="firstName"
                       value={billingDetails.firstName}
-                      onChange={(e) => handleInputChange("firstName", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("firstName", e.target.value)
+                      }
                       className={errors.firstName ? "border-destructive" : ""}
                     />
-                    {errors.firstName && <p className="text-sm text-destructive">{errors.firstName}</p>}
+                    {errors.firstName && (
+                      <p className="text-sm text-destructive">
+                        {errors.firstName}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Last Name *</Label>
                     <Input
                       id="lastName"
                       value={billingDetails.lastName}
-                      onChange={(e) => handleInputChange("lastName", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("lastName", e.target.value)
+                      }
                       className={errors.lastName ? "border-destructive" : ""}
                     />
-                    {errors.lastName && <p className="text-sm text-destructive">{errors.lastName}</p>}
+                    {errors.lastName && (
+                      <p className="text-sm text-destructive">
+                        {errors.lastName}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -410,21 +507,29 @@ Please confirm this order and provide payment details. Thank you! 🙏`
                       id="email"
                       type="email"
                       value={billingDetails.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
                       className={errors.email ? "border-destructive" : ""}
                       disabled={isLoggedIn}
                     />
-                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                    {errors.email && (
+                      <p className="text-sm text-destructive">{errors.email}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
                     <Input
                       id="phone"
                       value={billingDetails.phone}
-                      onChange={(e) => handleInputChange("phone", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("phone", e.target.value)
+                      }
                       className={errors.phone ? "border-destructive" : ""}
                     />
-                    {errors.phone && <p className="text-sm text-destructive">{errors.phone}</p>}
+                    {errors.phone && (
+                      <p className="text-sm text-destructive">{errors.phone}</p>
+                    )}
                   </div>
                 </div>
 
@@ -433,10 +538,14 @@ Please confirm this order and provide payment details. Thank you! 🙏`
                   <Input
                     id="address"
                     value={billingDetails.address}
-                    onChange={(e) => handleInputChange("address", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("address", e.target.value)
+                    }
                     className={errors.address ? "border-destructive" : ""}
                   />
-                  {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
+                  {errors.address && (
+                    <p className="text-sm text-destructive">{errors.address}</p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
@@ -445,30 +554,44 @@ Please confirm this order and provide payment details. Thank you! 🙏`
                     <Input
                       id="city"
                       value={billingDetails.city}
-                      onChange={(e) => handleInputChange("city", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("city", e.target.value)
+                      }
                       className={errors.city ? "border-destructive" : ""}
                     />
-                    {errors.city && <p className="text-sm text-destructive">{errors.city}</p>}
+                    {errors.city && (
+                      <p className="text-sm text-destructive">{errors.city}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="state">State *</Label>
                     <Input
                       id="state"
                       value={billingDetails.state}
-                      onChange={(e) => handleInputChange("state", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("state", e.target.value)
+                      }
                       className={errors.state ? "border-destructive" : ""}
                     />
-                    {errors.state && <p className="text-sm text-destructive">{errors.state}</p>}
+                    {errors.state && (
+                      <p className="text-sm text-destructive">{errors.state}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="pincode">Pincode *</Label>
                     <Input
                       id="pincode"
                       value={billingDetails.pincode}
-                      onChange={(e) => handleInputChange("pincode", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("pincode", e.target.value)
+                      }
                       className={errors.pincode ? "border-destructive" : ""}
                     />
-                    {errors.pincode && <p className="text-sm text-destructive">{errors.pincode}</p>}
+                    {errors.pincode && (
+                      <p className="text-sm text-destructive">
+                        {errors.pincode}
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -485,10 +608,17 @@ Please confirm this order and provide payment details. Thank you! 🙏`
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit}>
-                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
+                  <RadioGroup
+                    value={paymentMethod}
+                    onValueChange={setPaymentMethod}
+                    className="space-y-4"
+                  >
                     <div className="flex items-center space-x-2 p-4 border rounded-lg">
                       <RadioGroupItem value="whatsapp" id="whatsapp" />
-                      <Label htmlFor="whatsapp" className="flex items-center space-x-2 cursor-pointer">
+                      <Label
+                        htmlFor="whatsapp"
+                        className="flex items-center space-x-2 cursor-pointer"
+                      >
                         <MessageCircle className="h-4 w-4 text-green-600" />
                         <span>WhatsApp Order</span>
                       </Label>
@@ -496,7 +626,10 @@ Please confirm this order and provide payment details. Thank you! 🙏`
 
                     <div className="flex items-center space-x-2 p-4 border rounded-lg">
                       <RadioGroupItem value="qrcode" id="qrcode" />
-                      <Label htmlFor="qrcode" className="flex items-center space-x-2 cursor-pointer">
+                      <Label
+                        htmlFor="qrcode"
+                        className="flex items-center space-x-2 cursor-pointer"
+                      >
                         <QrCode className="h-4 w-4 text-blue-600" />
                         <span>QR Code Payment</span>
                       </Label>
@@ -508,10 +641,13 @@ Please confirm this order and provide payment details. Thank you! 🙏`
                       <div className="flex items-start space-x-2">
                         <MessageCircle className="h-5 w-5 text-green-600 mt-0.5" />
                         <div>
-                          <h4 className="font-medium text-green-800">WhatsApp Order</h4>
+                          <h4 className="font-medium text-green-800">
+                            WhatsApp Order
+                          </h4>
                           <p className="text-sm text-green-700 mt-1">
-                            Your order details will be sent to our WhatsApp business number. Our team will confirm your
-                            order and provide payment instructions.
+                            Your order details will be sent to our WhatsApp
+                            business number. Our team will confirm your order
+                            and provide payment instructions.
                           </p>
                         </div>
                       </div>
@@ -523,10 +659,13 @@ Please confirm this order and provide payment details. Thank you! 🙏`
                       <div className="flex items-start space-x-2">
                         <QrCode className="h-5 w-5 text-blue-600 mt-0.5" />
                         <div>
-                          <h4 className="font-medium text-blue-800">QR Code Payment</h4>
+                          <h4 className="font-medium text-blue-800">
+                            QR Code Payment
+                          </h4>
                           <p className="text-sm text-blue-700 mt-1">
-                            Scan the QR code with any UPI app to make instant payment. Your order will be confirmed
-                            automatically after payment.
+                            Scan the QR code with any UPI app to make instant
+                            payment. Your order will be confirmed automatically
+                            after payment.
                           </p>
                         </div>
                       </div>
@@ -545,14 +684,22 @@ Please confirm this order and provide payment details. Thank you! 🙏`
                             />
                           </div>
                           <div>
-                            <h4 className="font-medium text-gray-800">Scan to Pay Rs. {finalTotal}</h4>
-                            <p className="text-sm text-gray-600 mt-1">Use any UPI app to scan and pay</p>
-                            <p className="text-xs text-gray-500 mt-2">Payment will be confirmed automatically</p>
+                            <h4 className="font-medium text-gray-800">
+                              Scan to Pay Rs. {finalTotal}
+                            </h4>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Use any UPI app to scan and pay
+                            </p>
+                            <p className="text-xs text-gray-500 mt-2">
+                              Payment will be confirmed automatically
+                            </p>
                           </div>
                           {isProcessing && (
                             <div className="flex items-center justify-center space-x-2 text-blue-600">
                               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                              <span className="text-sm">Waiting for payment...</span>
+                              <span className="text-sm">
+                                Waiting for payment...
+                              </span>
                             </div>
                           )}
                         </div>
@@ -562,8 +709,12 @@ Please confirm this order and provide payment details. Thank you! 🙏`
                             <CheckCircle className="h-10 w-10 text-green-600" />
                           </div>
                           <div>
-                            <h4 className="font-medium text-green-800">Payment Successful!</h4>
-                            <p className="text-sm text-green-600 mt-1">Redirecting to your account...</p>
+                            <h4 className="font-medium text-green-800">
+                              Payment Successful!
+                            </h4>
+                            <p className="text-sm text-green-600 mt-1">
+                              Redirecting to your account...
+                            </p>
                           </div>
                         </div>
                       )}
@@ -573,13 +724,16 @@ Please confirm this order and provide payment details. Thank you! 🙏`
                   <Button
                     type="submit"
                     className="w-full mt-4 bg-primary hover:bg-primary/90 text-primary-foreground"
-                    disabled={isProcessing || (showQRCode && qrPaymentStatus === "pending")}
+                    disabled={
+                      isProcessing ||
+                      (showQRCode && qrPaymentStatus === "pending")
+                    }
                   >
                     {paymentMethod === "whatsapp"
                       ? `Send to WhatsApp - Rs. ${finalTotal}`
                       : showQRCode && qrPaymentStatus === "pending"
-                        ? "Waiting for Payment..."
-                        : `Pay via QR Code - Rs. ${finalTotal}`}
+                      ? "Waiting for Payment..."
+                      : `Pay via QR Code - Rs. ${finalTotal}`}
                   </Button>
                 </form>
               </CardContent>
@@ -604,10 +758,16 @@ Please confirm this order and provide payment details. Thank you! 🙏`
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                      <p className="text-sm font-medium truncate">
+                        {item.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Qty: {item.quantity}
+                      </p>
                     </div>
-                    <div className="text-sm font-medium">Rs. {item.price * item.quantity}</div>
+                    <div className="text-sm font-medium">
+                      Rs. {item.price * item.quantity}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -655,5 +815,5 @@ Please confirm this order and provide payment details. Thank you! 🙏`
         </div>
       </div>
     </div>
-  )
+  );
 }
