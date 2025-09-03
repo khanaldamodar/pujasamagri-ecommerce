@@ -7,11 +7,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useCart } from "@/contexts/cart-context"
 import { useUser } from "@/contexts/user-context"
 import Link from "next/link"
+import { useEffect, useState } from "react"
+import { useSettings } from "@/contexts/setting-context"
+
 
 export function Navbar() {
   const { itemCount } = useCart()
   const { user } = useUser()
-
+  
+  const { settings, loading } = useSettings()
   const categories = [
     "Pooja Thalis",
     "Incense & Dhoop",
@@ -26,12 +30,16 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center">
-            <Link href="/" className="text-2xl font-bold text-primary">
-              🕉️ PujaSamagri
+           <div className="flex items-center">
+            <Link href="/" className="flex items-center gap-2">
+              {settings?.logo ? (
+                <img src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${settings.logo}`} alt="Logo" className="h-8 w-8 object-contain" />
+              ) : (
+                <span className="text-xl">🕉️</span>
+              )}
+              <span className="text-2xl font-bold text-primary">{settings?.business_name || "PujaSamagri"}</span>
             </Link>
           </div>
-
           {/* Search Bar - Hidden on mobile */}
           <div className="hidden md:flex flex-1 max-w-lg mx-8">
             <div className="relative w-full">

@@ -23,6 +23,7 @@ import {
 import { useCart } from "@/contexts/cart-context";
 import { useUser } from "@/contexts/user-context";
 import Link from "next/link";
+import { useSettings } from "@/contexts/setting-context";
 
 interface BillingDetails {
   firstName: string;
@@ -70,10 +71,12 @@ export function CheckoutContent() {
     city: user?.city || "",
     state: user?.state || "",
     pincode: user?.pincode || "",
-    country: user?.country || "India",
+    country: user?.country || "Nepal",
   });
 
   const [errors, setErrors] = useState<Partial<BillingDetails & AuthForm>>({});
+
+  const {settings} = useSettings();
 
   const validateAuthForm = (): boolean => {
     const newErrors: Partial<AuthForm> = {};
@@ -231,7 +234,7 @@ Please confirm this order and provide payment details. Thank you! 🙏`;
   const handleWhatsAppPayment = () => {
     if (!validateForm()) return;
 
-    const whatsappNumber = "9779851353789";
+    const whatsappNumber = settings?.whatsapp
     const message = generateWhatsAppMessage();
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
@@ -260,42 +263,36 @@ Please confirm this order and provide payment details. Thank you! 🙏`;
     router.push("/account");
   };
 
-  const handleQRPayment = async () => {
-    if (!validateForm()) return;
+ const handleQRPayment = async () => {
+  if (!validateForm()) return;
 
-    setShowQRCode(true);
-    setIsProcessing(true);
+  // Just show QR, don't auto mark as paid
+  setShowQRCode(true);
+  setIsProcessing(false);
 
-    setTimeout(() => {
-      setQrPaymentStatus("paid");
-      setIsProcessing(false);
-
-      const orderId = Math.random().toString(36).substr(2, 9).toUpperCase();
-      const newOrder = {
-        id: orderId,
-        items,
-        total: finalTotal,
-        status: "confirmed" as const,
-        paymentMethod: "QR Code",
-        date: new Date().toISOString(),
-        paymentStatus: "paid" as const,
-      };
-
-      if (isLoggedIn && user) {
-        addOrder(newOrder);
-      } else {
-        createUser({
-          ...billingDetails,
-          orders: [newOrder],
-        });
-      }
-
-      clearCart();
-      setTimeout(() => {
-        router.push("/account");
-      }, 2000);
-    }, 3000);
+  // ✅ Create the order with "pending" status, not paid
+  const orderId = Math.random().toString(36).substr(2, 9).toUpperCase();
+  const newOrder = {
+    id: orderId,
+    items,
+    total: finalTotal,
+    status: "pending" as const,
+    paymentMethod: "QR Code",
+    date: new Date().toISOString(),
+    paymentStatus: "pending" as const, // stays pending
   };
+
+  if (isLoggedIn && user) {
+    addOrder(newOrder);
+  } else {
+    createUser({
+      ...billingDetails,
+      orders: [newOrder],
+    });
+  }
+
+  clearCart();
+};
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -673,53 +670,50 @@ Please confirm this order and provide payment details. Thank you! 🙏`;
                   )}
 
                   {showQRCode && paymentMethod === "qrcode" && (
-                    <div className="mt-4 p-6 bg-white rounded-lg border-2 border-blue-200 text-center">
-                      {qrPaymentStatus === "pending" ? (
-                        <div className="space-y-4">
-                          <div className="w-48 h-48 mx-auto bg-white rounded-lg flex items-center justify-center border">
-                            <img
-                              src="/payment-qr.png"
-                              alt="Payment QR Code"
-                              className="w-full h-full object-contain rounded-lg"
-                            />
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-gray-800">
-                              Scan to Pay Rs. {finalTotal}
-                            </h4>
-                            <p className="text-sm text-gray-600 mt-1">
-                              Use any UPI app to scan and pay
-                            </p>
-                            <p className="text-xs text-gray-500 mt-2">
-                              Payment will be confirmed automatically
-                            </p>
-                          </div>
-                          {isProcessing && (
-                            <div className="flex items-center justify-center space-x-2 text-blue-600">
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                              <span className="text-sm">
-                                Waiting for payment...
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
-                            <CheckCircle className="h-10 w-10 text-green-600" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-green-800">
-                              Payment Successful!
-                            </h4>
-                            <p className="text-sm text-green-600 mt-1">
-                              Redirecting to your account...
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
+  <div className="mt-4 p-6 bg-white rounded-lg border-2 border-blue-200 text-center">
+    {qrPaymentStatus === "pending" ? (
+      <div className="space-y-4">
+        <div className="w-48 h-48 mx-auto bg-white rounded-lg flex items-center justify-center border">
+          <img
+            src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${settings?.payment_qr}` || "/payment-qr.png"} // ✅ use from settings
+            alt="Payment QR Code"
+            className="w-full h-full object-contain rounded-lg"
+          />
+        </div>
+        <div>
+          <h4 className="font-medium text-gray-800">
+            Scan to Pay Rs. {finalTotal}
+          </h4>
+          <p className="text-sm text-gray-600 mt-1">
+            Use any UPI app to scan and pay
+          </p>
+          <p className="text-xs text-gray-500 mt-2">
+            Payment will be confirmed automatically
+          </p>
+        </div>
+        {isProcessing && (
+          <div className="flex items-center justify-center space-x-2 text-blue-600">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+            <span className="text-sm">Waiting for payment...</span>
+          </div>
+        )}
+      </div>
+    ) : (
+      <div className="space-y-4">
+        <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+          <CheckCircle className="h-10 w-10 text-green-600" />
+        </div>
+        <div>
+          <h4 className="font-medium text-green-800">Payment Successful!</h4>
+          <p className="text-sm text-green-600 mt-1">
+            Redirecting to your account...
+          </p>
+        </div>
+      </div>
+    )}
+  </div>
+)}
+
 
                   <Button
                     type="submit"
@@ -752,7 +746,7 @@ Please confirm this order and provide payment details. Thank you! 🙏`;
                   <div key={item.id} className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-muted rounded-md overflow-hidden flex-shrink-0">
                       <img
-                        src={item.image || "/placeholder.svg"}
+                        src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${item.image}` || "/placeholder.svg"}
                         alt={item.name}
                         className="w-full h-full object-cover"
                       />

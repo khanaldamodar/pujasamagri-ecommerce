@@ -22,10 +22,10 @@ export function ProductsGrid() {
   const [products, setProducts] = useState<any[]>([]);
   const itemsPerPage = 12;
   const { addItem } = useCart();
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL
-  const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const imageUrl = process.env.NEXT_PUBLIC_IMAGE_URL;
 
-  // ✅ Fetch products from API
+  //  Fetch products from API
   useEffect(() => {
     fetch(`${apiUrl}products`)
       .then((res) => res.json())
@@ -40,9 +40,10 @@ export function ProductsGrid() {
               : null,
             rating: parseFloat(p.rating) || 0,
             reviews: p.reviews || 0,
+            // ⬇️ store only relative path
             image:
               p.images && p.images.length > 0
-                ? `${imageUrl}${p.images[0]}`
+                ? p.images[0]
                 : "/placeholder.svg",
             category: p.category || "",
             brand: p.brand || "",
@@ -50,6 +51,7 @@ export function ProductsGrid() {
             discount: parseFloat(p.discount) || 0,
             stock: p.stock,
           }));
+
           setProducts(mapped);
         }
       })
@@ -114,7 +116,7 @@ export function ProductsGrid() {
             <div className="relative overflow-hidden">
               <Link href={`/products/${product.id}`}>
                 <img
-                  src={product.image || "/placeholder.svg"}
+                  src={`${process.env.NEXT_PUBLIC_IMAGE_URL}${product.image}` || "/placeholder.svg"}
                   alt={product.name}
                   className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                 />

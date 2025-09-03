@@ -35,7 +35,7 @@ export function PackagesGrid() {
     }
     fetchPackages()
   }, [])
-
+// image: p.image ? `${imageUrl}${p.image}` : "/placeholder.svg",
   const handleAddToCart = (pkg: any) => {
     addItem({
       id: pkg.id,
@@ -174,12 +174,14 @@ export function PackagesGrid() {
           <p className="text-muted-foreground">
             We can create custom puja packages tailored to your specific needs and occasions.
           </p>
+          <Link href="/contact">
           <Button
             variant="outline"
             className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent"
           >
             Contact Us for Custom Packages
           </Button>
+          </Link>
         </div>
       </div>
     </div>

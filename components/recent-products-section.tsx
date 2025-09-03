@@ -130,6 +130,7 @@ export function RecentProductsSection() {
         </div>
 
         <div className="text-center mt-12">
+          <Link href="/products">
           <Button
             variant="outline"
             size="lg"
@@ -137,6 +138,7 @@ export function RecentProductsSection() {
           >
             View All Products
           </Button>
+          </Link>
         </div>
       </div>
     </section>

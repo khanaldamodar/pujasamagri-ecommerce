@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Phone, Mail, MapPin, MessageCircle, Send } from "lucide-react"
+import { useSettings } from "@/contexts/setting-context"
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -37,6 +38,8 @@ export default function ContactPage() {
     const whatsappURL = `https://wa.me/${whatsappNumber}?text=${text}`
     window.open(whatsappURL, "_blank")
   }
+
+  const {settings, loading} = useSettings();
 
   return (
     <div className="min-h-screen bg-background">
@@ -69,53 +72,53 @@ export default function ContactPage() {
               {/* Contact Cards */}
               <div className="space-y-6">
                 <Card>
-                  <CardContent className="flex items-center space-x-4 p-6">
+                  <CardContent className="flex items-center space-x-4 p-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                       <Phone className="h-6 w-6 text-primary" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">Phone</h3>
-                      <p className="text-muted-foreground">+977 98765 43210</p>
+                      <p className="text-muted-foreground">{settings?.phone}</p>
                       <p className="text-sm text-muted-foreground">Available 9 AM - 7 PM (NPT)</p>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardContent className="flex items-center space-x-4 p-6">
+                  <CardContent className="flex items-center space-x-4 p-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                       <Mail className="h-6 w-6 text-primary" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">Email</h3>
-                      <p className="text-muted-foreground">info@pujasamagri.com</p>
+                      <p className="text-muted-foreground">{settings?.email}</p>
                       <p className="text-sm text-muted-foreground">We'll respond within 24 hours</p>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardContent className="flex items-center space-x-4 p-6">
+                  <CardContent className="flex items-center space-x-4 p-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                       <MessageCircle className="h-6 w-6 text-primary" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">WhatsApp</h3>
-                      <p className="text-muted-foreground">+977 98765 43210</p>
+                      <p className="text-muted-foreground">{settings?.whatsapp}</p>
                       <p className="text-sm text-muted-foreground">Quick support & order updates</p>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardContent className="flex items-center space-x-4 p-6">
+                  <CardContent className="flex items-center space-x-4 p-4">
                     <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                       <MapPin className="h-6 w-6 text-primary" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">Address</h3>
-                      <p className="text-muted-foreground">Kuleshwar, Kathmandu</p>
-                      <p className="text-muted-foreground">Nepal</p>
+                      <p className="text-muted-foreground">{settings?.address}</p>
+                      {/* <p className="text-muted-foreground">Nepal</p> */}
                     </div>
                   </CardContent>
                 </Card>

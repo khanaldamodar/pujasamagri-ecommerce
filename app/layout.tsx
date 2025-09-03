@@ -1,51 +1,28 @@
-"use client"
-
-import type React from "react"
 import type { Metadata } from "next"
-import { GeistSans } from "geist/font/sans"
-import { GeistMono } from "geist/font/mono"
-import { Analytics } from "@vercel/analytics/next"
-import { CartProvider } from "@/contexts/cart-context"
-import { AuthProvider } from "@/contexts/auth-context"
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { Suspense } from "react"
 import "./globals.css"
-import { usePathname } from "next/navigation"
-import { UserProvider } from "@/contexts/user-context"
-import { User } from "lucide-react"
+import { AuthProvider } from "@/contexts/auth-context"
 
+export async function generateMetadata(): Promise<Metadata> {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}setting`, {
+    cache: "no-store", // always fetch latest
+  })
+  const settings = await res.json()
 
-// export const metadata: Metadata = {
-//   title: "PujaSamagri - Authentic Hindu Puja Items",
-//   description: "Your trusted source for authentic Hindu puja items and spiritual accessories",
-//   generator: "v0.app",
-// }
+  return {
+    title: settings.business_name || "PujaSamagri - Authentic Hindu Puja Items",
+    description: settings.description || "Your trusted source for authentic Hindu puja items and spiritual accessories",
+    icons: { icon: settings.favicon ? `${process.env.NEXT_PUBLIC_IMAGE_URL}${settings.favicon}` : "/favicon.ico" },
+  }
+}
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
-  const pathname = usePathname()
-  const isAdminRoute = pathname?.startsWith("/admin")
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <Suspense fallback={null}>
-          <AuthProvider>
-            <UserProvider>
-            <CartProvider>
-              {!isAdminRoute && <Navbar />}
-              {children}
-              {!isAdminRoute && <Footer />}
-            </CartProvider>
-            </UserProvider>
-          </AuthProvider>
-        </Suspense>
-        <Analytics />
-      </body>
+      <body>
+        <AuthProvider>
+        {children}
+        </AuthProvider>
+        </body>
     </html>
   )
 }

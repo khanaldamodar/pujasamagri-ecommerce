@@ -141,7 +141,7 @@ const register = async (formData: any) => {
     if (user) {
       const updatedUser = {
         ...user,
-        orders: [order, ...user.orders],
+         orders: [order, ...(user?.orders || [])],
       }
       setUser(updatedUser)
       // localStorage.setItem("pujasamagri_current_user", JSON.stringify(updatedUser))
