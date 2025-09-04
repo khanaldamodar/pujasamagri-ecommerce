@@ -7,11 +7,13 @@ import { Badge } from "@/components/ui/badge"
 import { Star, Package } from "lucide-react"
 import { useCart } from "@/contexts/cart-context"
 import Link from "next/link"
+import { useSettings } from "@/contexts/setting-context"
 
 export function PackagesSection() {
   const { addItem } = useCart()
   const [packages, setPackages] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const {settings} = useSettings()
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -58,9 +60,8 @@ export function PackagesSection() {
           <div className="flex items-center justify-center space-x-2 text-primary">
             <Package className="h-6 w-6" />
             <span className="text-sm font-medium uppercase tracking-wide">Curated Packages</span> 
-            
           </div>
-          <span className="bg-primary p-1 text-white rounded">Inquiry Number: +977-9851353789</span>
+          <span className="bg-primary p-1 text-white rounded">Inquiry Number: +977-{settings?.phone}</span>
           <h2 className="text-3xl lg:text-4xl font-bold text-foreground">Complete Puja Packages</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Thoughtfully curated collections of authentic puja items for every occasion and deity
